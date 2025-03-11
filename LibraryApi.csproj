@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <Folder Include="BusinessLogic\Info\" />
-    <Folder Include="BusinessLogic\Utill\" />
   </ItemGroup>
 
 </Project>
