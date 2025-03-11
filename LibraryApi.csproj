@@ -19,18 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="BusinessLogic\Implement\Book\Interface\" />
-    <Folder Include="BusinessLogic\Implement\Book\Facade\" />
-    <Folder Include="BusinessLogic\Implement\Book\Service\" />
-    <Folder Include="BusinessLogic\Implement\Library\Interface\" />
-    <Folder Include="BusinessLogic\Implement\Library\Facade\" />
-    <Folder Include="BusinessLogic\Implement\Library\Service\" />
-    <Folder Include="BusinessLogic\Implement\Authentication\Facade\" />
-    <Folder Include="BusinessLogic\Implement\Authentication\Interface\" />
-    <Folder Include="BusinessLogic\Implement\Authentication\Service\" />
-    <Folder Include="BusinessLogic\Implement\User\Interface\" />
-    <Folder Include="BusinessLogic\Implement\User\Facade\" />
-    <Folder Include="BusinessLogic\Implement\User\Service\" />
     <Folder Include="BusinessLogic\Info\" />
     <Folder Include="BusinessLogic\Utill\" />
   </ItemGroup>
