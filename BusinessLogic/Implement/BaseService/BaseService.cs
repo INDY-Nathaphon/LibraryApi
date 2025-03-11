@@ -1,4 +1,4 @@
-﻿using LibraryApi.BusinessLogic.Domain;
+﻿using LibraryApi.Domain;
 using System.Data.Entity;
 
 namespace LibraryApi.BusinessLogic.Implement.BaseService
@@ -12,7 +12,7 @@ namespace LibraryApi.BusinessLogic.Implement.BaseService
             _context = context;
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(int id)
         {
             return await _context.Set<T>().FindAsync(id);
         }

@@ -1,4 +1,4 @@
-﻿namespace LibraryApi.BusinessLogic.Domain.Entities
+﻿namespace LibraryApi.Domain.Entities
 {
     public class BookFile : BaseEntity
     {

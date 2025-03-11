@@ -1,6 +1,6 @@
-﻿using LibraryApi.BusinessLogic.Domain;
-using LibraryApi.BusinessLogic.Implement.BaseService;
+﻿using LibraryApi.BusinessLogic.Implement.BaseService;
 using LibraryApi.BusinessLogic.Implement.User.Interface;
+using LibraryApi.Domain;
 
 namespace LibraryApi.BusinessLogic.Implement.User.Service
 {

@@ -1,6 +1,6 @@
 ﻿using static LibraryApi.BusinessLogic.Enum.Enums;
 
-namespace LibraryApi.BusinessLogic.Domain.Entities
+namespace LibraryApi.Domain.Entities
 {
     public class User : BaseEntity
     {

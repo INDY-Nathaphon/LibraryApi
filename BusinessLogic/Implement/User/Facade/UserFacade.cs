@@ -30,7 +30,7 @@ namespace LibraryApi.BusinessLogic.Implement.User.Facade
             return _transactionManager.DoworkWithTransaction(() => _userService.GetAllAsync());
         }
 
-        public Task<Domain.Entities.User> GetByIdAsync(int id)
+        public Task<Domain.Entities.User?> GetByIdAsync(int id)
         {
             return _transactionManager.DoworkWithTransaction(() => _userService.GetByIdAsync(id));
         }

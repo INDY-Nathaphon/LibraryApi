@@ -1,8 +1,8 @@
-﻿namespace LibraryApi.BusinessLogic.Domain.Entities
+﻿namespace LibraryApi.Domain.Entities
 {
     public class BaseEntity
     {
-        public long Id { get; set; }    
+        public long Id { get; set; }
 
         public DateTime CreatedDate { get; set; }
 

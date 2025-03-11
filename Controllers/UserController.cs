@@ -1,5 +1,5 @@
-using LibraryApi.BusinessLogic.Domain.Entities;
 using LibraryApi.BusinessLogic.Implement.User.Interface;
+using LibraryApi.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers
