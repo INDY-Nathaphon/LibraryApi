@@ -1,5 +1,20 @@
-﻿using LibraryApi.BusinessLogic.Middleware;
+﻿using LibraryApi.BusinessLogic.Implement.Authentication.Facade;
+using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
+using LibraryApi.BusinessLogic.Implement.Authentication.Service;
+using LibraryApi.BusinessLogic.Implement.Book.Facade;
+using LibraryApi.BusinessLogic.Implement.Book.Interface;
+using LibraryApi.BusinessLogic.Implement.Book.Service;
+using LibraryApi.BusinessLogic.Implement.Library.Facade;
+using LibraryApi.BusinessLogic.Implement.Library.Interface;
+using LibraryApi.BusinessLogic.Implement.Library.Service;
+using LibraryApi.BusinessLogic.Implement.User.Facade;
+using LibraryApi.BusinessLogic.Implement.User.Interface;
+using LibraryApi.BusinessLogic.Implement.User.Service;
+using LibraryApi.BusinessLogic.Middleware;
+using LibraryApi.BusinessLogic.TransactionManager;
 using LibraryApi.Domain;
+using LibraryApi.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +41,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(connectionString);
 });
+
+#endregion
+
+#region Add Service
+
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<ITransactionManager, TransactionManager>();  
+
+builder.Services.AddScoped<IUserFacade, UserFacade>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddScoped<IAuthenticationFacade, AuthenticationFacade>();
+builder.Services.AddScoped<IAuthenticationService, Authenticationservice>();
+
+builder.Services.AddScoped<IBookFacade,BookFacade >();
+builder.Services.AddScoped<IBookService, BookService>();
+
+builder.Services.AddScoped<ILibraryFacade, LibraryFacade>();
+builder.Services.AddScoped<ILibraryService, LibraryService>();
 
 #endregion
 

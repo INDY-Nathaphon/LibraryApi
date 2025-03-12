@@ -1,3 +1,5 @@
+using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
+using LibraryApi.Controllers.DTO.AUthenticationDTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers
@@ -7,17 +9,25 @@ namespace LibraryApi.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly ILogger<AuthenticationController> _logger;
+        private readonly IAuthenticationFacade _authenticationFacade;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationFacade authenticationFacade)
         {
             _logger = logger;
+            _authenticationFacade = authenticationFacade;
         }
 
         [HttpGet]
         [Route("register")]
-        public async Task<IActionResult> Register()
+        public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            throw new NotImplementedException();
+            var result = await _authenticationFacade.RegisterUserAsync(model);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
         [HttpPost]
