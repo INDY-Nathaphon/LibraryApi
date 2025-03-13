@@ -5,6 +5,8 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Interface
 {
     public interface IAuthenticationFacade
     {
-        Task<ResponseDto> RegisterUserAsync(RegisterDto model);
+        Task<ResponseDto> Register(RegisterDto model);
+
+        Task<ResponseDto> Login(LoginDto model);
     }
 }

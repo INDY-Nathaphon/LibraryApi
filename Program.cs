@@ -11,6 +11,7 @@ using LibraryApi.BusinessLogic.Implement.User.Facade;
 using LibraryApi.BusinessLogic.Implement.User.Interface;
 using LibraryApi.BusinessLogic.Implement.User.Service;
 using LibraryApi.BusinessLogic.Middleware;
+using LibraryApi.BusinessLogic.Service.TokenBlacklist;
 using LibraryApi.BusinessLogic.TransactionManager;
 using LibraryApi.Domain;
 using LibraryApi.Domain.Entities;
@@ -61,6 +62,8 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ILibraryFacade, LibraryFacade>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
+builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
+
 #endregion
 
 var app = builder.Build();
@@ -73,6 +76,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<JwtMiddleware>();
 
 app.UseHttpsRedirection();
 
