@@ -6,18 +6,20 @@ using System.Security.Cryptography;
 using System.Text;
 using StackExchange.Redis;
 using Microsoft.Extensions.Caching.Distributed;
+using LibraryApi.Domain;
+using Microsoft.Extensions.Options;
 
 namespace LibraryApi.BusinessLogic.Service.TokenBlacklist
 {
     public class TokenService : ITokenService
     {
-        private readonly IConfiguration _config;
         private readonly IDistributedCache _redis;
+        private readonly AppSettings _appSettings;
 
-        public TokenService(IConfiguration config, IDistributedCache redis)
+        public TokenService(IDistributedCache redis, IOptions<AppSettings> appSettings)
         {
-            _config = config;
             _redis = redis;
+            _appSettings = appSettings.Value;
         }
 
         public string GenerateAccessToken(User user)
@@ -29,11 +31,11 @@ namespace LibraryApi.BusinessLogic.Service.TokenBlacklist
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.JwtSetting.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: _appSettings.JwtSetting.Issuer,
+                audience: _appSettings.JwtSetting.Audience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(15), // ✅ Access Token อายุ 15 นาที
                 signingCredentials: creds
@@ -70,7 +72,7 @@ namespace LibraryApi.BusinessLogic.Service.TokenBlacklist
         public string GetUserIdFromRefreshToken(string refreshToken)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var secretKey = _config["Jwt:SecretKey"];
+            var secretKey = _appSettings.JwtSetting.Secret;
 
             if (string.IsNullOrEmpty(secretKey))
             {
@@ -98,7 +100,7 @@ namespace LibraryApi.BusinessLogic.Service.TokenBlacklist
         public string? ValidateAccessToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]);
+            var key = Encoding.UTF8.GetBytes(_appSettings.JwtSetting.Secret);
 
             try
             {
@@ -108,8 +110,8 @@ namespace LibraryApi.BusinessLogic.Service.TokenBlacklist
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = _config["Jwt:Issuer"],
-                    ValidAudience = _config["Jwt:Audience"],
+                    ValidIssuer = _appSettings.JwtSetting.Issuer,
+                    ValidAudience = _appSettings.JwtSetting.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
 

@@ -35,6 +35,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.ConfigureAppSettings(builder.Configuration);
+
 #region Database
 
 var connectionString = builder.Configuration.GetConnectionString("DbConnection");

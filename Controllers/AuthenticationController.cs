@@ -3,8 +3,10 @@ using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
 using LibraryApi.BusinessLogic.Service.TokenBlacklist;
 using LibraryApi.Controllers.DTO.AUthenticationDTO;
 using LibraryApi.Controllers.DTO.BaseDTO;
+using LibraryApi.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace LibraryApi.Controllers
 {
@@ -14,20 +16,19 @@ namespace LibraryApi.Controllers
     {
         private readonly ILogger<AuthenticationController> _logger;
         private readonly IAuthenticationFacade _authenticationFacade;
-private readonly IConfiguration _config;
         private readonly ITokenService _tokenService;
+        private readonly AppSettings _appSettings;
 
-
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationFacade authenticationFacade, IConfiguration config, ITokenService tokenBlacklistService)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationFacade authenticationFacade, ITokenService tokenBlacklistService, IOptions<AppSettings> appSettings)
         {
             _logger = logger;
             _authenticationFacade = authenticationFacade;
-            _config = config;
             _tokenService = tokenBlacklistService;
+            _appSettings = appSettings.Value;
         }
 
         [HttpGet]
-        [Route("register")]
+        [Route("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             var result = await _authenticationFacade.Register(model);
@@ -40,7 +41,7 @@ private readonly IConfiguration _config;
             return Ok(result);
         }
 
-        [HttpPost("login")]
+        [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             var result = await _authenticationFacade.Login(model);
@@ -61,7 +62,7 @@ private readonly IConfiguration _config;
         }
 
         [Authorize]
-        [HttpPost("logout")]
+        [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {
             var userId = HttpContext.Items["User"]?.ToString();
@@ -71,14 +72,14 @@ private readonly IConfiguration _config;
                 return BadRequest(new { message = "Token is missing." });
             }
 
-            int expiryMinutes = int.Parse(_config["Redis:TokenExpiryMinutes"] ?? "120");
-
+            int expiryMinutes = _appSettings.RedisSetting.TokenExpiryMinutes;
+                
             await Task.Run(() => _tokenService.RevokeRefreshToken(userId));
 
             return Ok(new { message = "Logged out successfully." });
         }
 
-        [HttpPost("refresh-token")]
+        [HttpPost("RefreshToken")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto model)
         {
             var refreshToken = model.RefreshToken;

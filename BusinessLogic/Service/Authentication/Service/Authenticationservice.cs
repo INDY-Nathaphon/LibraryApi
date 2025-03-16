@@ -24,7 +24,6 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
     {
         private readonly AppDbContext _context;
         private readonly IPasswordHasher<Domain.Entities.User> _passwordHasher;
-        private readonly IConfiguration _config;
         private readonly ITokenService _tokenService;
         private readonly IDistributedCache _redis; // ใช้ IDistributedCache ที่มาจาก DI
         private readonly IUserService _userService;
@@ -32,14 +31,12 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
         public AuthenticationService(
             AppDbContext context,
             IPasswordHasher<Domain.Entities.User> passwordHasher,
-            IConfiguration config,
             ITokenService tokenService,
             IDistributedCache redis,  // รับจาก DI
             IUserService userService)
         {
             _context = context;
             _passwordHasher = passwordHasher;
-            _config = config;
             _tokenService = tokenService;
             _redis = redis; // ไม่ต้องสร้าง ConnectionMultiplexer เอง
             _userService = userService;
