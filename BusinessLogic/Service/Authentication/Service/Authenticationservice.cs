@@ -2,6 +2,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Azure.Core;
+using Azure;
 using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
 using LibraryApi.BusinessLogic.Implement.BaseService;
 using LibraryApi.Controllers.DTO.AUthenticationDTO;
@@ -10,20 +12,37 @@ using LibraryApi.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using static LibraryApi.BusinessLogic.Enum.Enums;
+using LibraryApi.BusinessLogic.Service.TokenBlacklist;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.EntityFrameworkCore.Storage;
+using LibraryApi.BusinessLogic.Implement.User.Interface;
+using StackExchange.Redis;
 
 namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
 {
-    public class Authenticationservice : IAuthenticationService
+    public class AuthenticationService : IAuthenticationService
     {
-
         private readonly AppDbContext _context;
         private readonly IPasswordHasher<Domain.Entities.User> _passwordHasher;
         private readonly IConfiguration _config;
-        public Authenticationservice(AppDbContext context, IPasswordHasher<Domain.Entities.User> passwordHasher, IConfiguration config) 
+        private readonly ITokenService _tokenService;
+        private readonly IDistributedCache _redis; // ใช้ IDistributedCache ที่มาจาก DI
+        private readonly IUserService _userService;
+
+        public AuthenticationService(
+            AppDbContext context,
+            IPasswordHasher<Domain.Entities.User> passwordHasher,
+            IConfiguration config,
+            ITokenService tokenService,
+            IDistributedCache redis,  // รับจาก DI
+            IUserService userService)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _config = config;
+            _tokenService = tokenService;
+            _redis = redis; // ไม่ต้องสร้าง ConnectionMultiplexer เอง
+            _userService = userService;
         }
 
         public async Task<ResponseDto> Register(RegisterDto model)
@@ -69,53 +88,64 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
             return new ResponseDto(true, "User registered successfully");
         }
 
-        public async Task<ResponseDto> Login(LoginDto model)
+        public async Task<LoginRespDto> Login(LoginDto model)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
 
-            if (user == null) return new ResponseDto(false, "Invalid email or password");
+            if (user == null) throw new Exception("User not found");
 
             // ตรวจสอบ AuthProvider (Local หรือ OAuth)
             if (model.AuthProvider == AuthProvider.Local)
             {
                 var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password);
                 if (result == PasswordVerificationResult.Failed)
-                    return new ResponseDto(false, "Invalid email or password");
+                    throw new Exception("Invalid password");
             }
             else
             {
                 // OAuth Login (เช็ค OAuthId)
                 if (user.AuthProvider != model.AuthProvider || user.OAuthId != model.OAuthId)
-                    return new ResponseDto(false, "Invalid OAuth login");
+                    throw new Exception("Invalid OAuth credentials");
             }
 
             // ออก JWT Token
-            string token = GenerateJwtToken(user);
-            return new ResponseDto(true, "Login successful", new { token });
+            var accessToken = _tokenService.GenerateAccessToken(user);
+            var refreshToken = _tokenService.GenerateRefreshToken();
+
+            #region Store Refresh Token in Redis
+
+            _tokenService.StoreRefreshToken(user.Id.ToString(), refreshToken); // StoreRefreshToken
+
+            #endregion
+
+            return new LoginRespDto { AccessToken = accessToken, RefreshToken = refreshToken, Success   = true };
         }
 
-
-        private string GenerateJwtToken(Domain.Entities.User user)
+        public async Task<RefrachTokenRespDto> RefreshTokenAsync(string refreshToken, string userId)
         {
-            var key = Encoding.UTF8.GetBytes(_config["JwtSettings:Secret"]);
+            #region Validate refresh token
 
-            var claims = new List<Claim>
-                        {
-                            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                            new Claim("role", user.Role.ToString())
-                        };
+            _tokenService.ValidateRefreshToken(userId,refreshToken);
 
-            var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
-            var tokenDescriptor = new JwtSecurityToken(
-                _config["JwtSettings:Issuer"],
-                _config["JwtSettings:Audience"],
-                claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["JwtSettings:ExpiresInMinutes"])),
-                signingCredentials: credentials
-            );
+            #endregion
 
-            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+            var user = await _userService.GetByIdAsync(Convert.ToInt32(userId));
+
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var newAccessToken = _tokenService.GenerateAccessToken(user);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+            // Update Refresh Token in Redis
+            await _redis.SetStringAsync(user.Id.ToString(), newRefreshToken, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
+            });
+
+            return new RefrachTokenRespDto { RefreshToken = newRefreshToken, AccessToken = newAccessToken, Success = true };
         }
     }
 }

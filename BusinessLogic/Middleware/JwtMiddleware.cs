@@ -1,27 +1,23 @@
 ﻿using LibraryApi.BusinessLogic.Service.TokenBlacklist;
 
-public class JwtMiddleware
+public class JwtMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-    private readonly ITokenBlacklistService _tokenBlacklistService;
+    private readonly RequestDelegate _next = next;
 
-    public JwtMiddleware(RequestDelegate next, ITokenBlacklistService tokenBlacklistService)
+    public async Task InvokeAsync(HttpContext context, ITokenService tokenService)
     {
-        _next = next;
-        _tokenBlacklistService = tokenBlacklistService;
-    }
-
-    public async Task Invoke(HttpContext context)
-    {
-        var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-        if (!string.IsNullOrEmpty(token) && await _tokenBlacklistService.IsTokenRevokedAsync(token))
+        var token = context.Request.Cookies["AuthToken"];
+        if (!string.IsNullOrEmpty(token))
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsync("Token has been revoked.");
-            return;
+            var userId = tokenService.ValidateAccessToken(token);
+
+            if (userId != null)
+            {
+                context.Items["User"] = userId;  // Store user info in HttpContext
+            }
         }
 
         await _next(context);
     }
 }
+

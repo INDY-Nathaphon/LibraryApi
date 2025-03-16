@@ -17,6 +17,7 @@ using LibraryApi.Domain;
 using LibraryApi.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "AuthService_";
+});
+
 #endregion
 
 #region Add Service
@@ -54,7 +61,7 @@ builder.Services.AddScoped<IUserFacade, UserFacade>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<IAuthenticationFacade, AuthenticationFacade>();
-builder.Services.AddScoped<IAuthenticationService, Authenticationservice>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddScoped<IBookFacade,BookFacade >();
 builder.Services.AddScoped<IBookService, BookService>();
@@ -62,7 +69,7 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ILibraryFacade, LibraryFacade>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
-builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
+builder.Services.AddSingleton<ITokenService, TokenService>();
 
 #endregion
 

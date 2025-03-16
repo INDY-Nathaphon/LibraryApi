@@ -7,6 +7,8 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Interface
     {
         Task<ResponseDto> Register(RegisterDto model);
 
-        Task<ResponseDto> Login(LoginDto model);
+        Task<LoginRespDto> Login(LoginDto model);
+
+        Task<RefrachTokenRespDto> RefreshTokenAsync( string userId, string refreshToken);
     }
 }

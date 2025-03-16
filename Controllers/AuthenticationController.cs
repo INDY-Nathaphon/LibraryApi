@@ -1,6 +1,8 @@
+using Azure.Core;
 using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
 using LibraryApi.BusinessLogic.Service.TokenBlacklist;
 using LibraryApi.Controllers.DTO.AUthenticationDTO;
+using LibraryApi.Controllers.DTO.BaseDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,15 +15,15 @@ namespace LibraryApi.Controllers
         private readonly ILogger<AuthenticationController> _logger;
         private readonly IAuthenticationFacade _authenticationFacade;
 private readonly IConfiguration _config;
-        private readonly ITokenBlacklistService _tokenBlacklistService;
+        private readonly ITokenService _tokenService;
 
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationFacade authenticationFacade, IConfiguration config, ITokenBlacklistService tokenBlacklistService)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationFacade authenticationFacade, IConfiguration config, ITokenService tokenBlacklistService)
         {
             _logger = logger;
             _authenticationFacade = authenticationFacade;
             _config = config;
-            _tokenBlacklistService = tokenBlacklistService;
+            _tokenService = tokenBlacklistService;
         }
 
         [HttpGet]
@@ -38,43 +40,67 @@ private readonly IConfiguration _config;
             return Ok(result);
         }
 
-        [HttpPost]
-        [Route("login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             var result = await _authenticationFacade.Login(model);
 
-            if (!result.Success)
+            if (result.Success)
             {
-                return BadRequest(result);
+                Response.Cookies.Append("AuthToken", result.AccessToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddMinutes(15)
+                });
+                return Ok(result.RefreshToken);
             }
 
-            return Ok(result);
+            return Unauthorized();
         }
 
         [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var userId = HttpContext.Items["User"]?.ToString();
 
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 return BadRequest(new { message = "Token is missing." });
             }
 
             int expiryMinutes = int.Parse(_config["Redis:TokenExpiryMinutes"] ?? "120");
 
-            await _tokenBlacklistService.RevokeTokenAsync(token, expiryMinutes);
+            await Task.Run(() => _tokenService.RevokeRefreshToken(userId));
 
             return Ok(new { message = "Logged out successfully." });
         }
 
-        [HttpGet]
-        [Route("refreshtoken")]
-        public async Task<IActionResult> RefreshToken()
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto model)
         {
-            throw new NotImplementedException();
+            var refreshToken = model.RefreshToken;
+            var userId = _tokenService.GetUserIdFromRefreshToken(refreshToken);
+
+            var result = await _authenticationFacade.RefreshTokenAsync( model.UserId, model.RefreshToken);
+
+            if (result.Success)
+            {
+                Response.Cookies.Append("AuthToken", result.AccessToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddMinutes(15)
+                });
+
+                return Ok(result.RefreshToken);
+            }
+
+            return Unauthorized();
         }
+
     }
 }

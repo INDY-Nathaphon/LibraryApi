@@ -22,9 +22,14 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Facade
             return _transactionManager.DoworkWithTransaction(() => _authenticationService.Register(model));
         }
 
-        public Task<ResponseDto> Login(LoginDto model)
+        public Task<LoginRespDto> Login(LoginDto model)
         {
             return _transactionManager.DoworkWithTransaction(() => _authenticationService.Login(model));
+        }
+
+        public Task<RefrachTokenRespDto> RefreshTokenAsync(string userId, string refreshToken)
+        {
+            return _transactionManager.DoworkWithTransaction(() => _authenticationService.RefreshTokenAsync(userId, refreshToken));
         }
     }
 }
