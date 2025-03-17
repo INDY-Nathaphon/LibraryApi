@@ -10,18 +10,15 @@ using Microsoft.Extensions.Options;
 
 namespace LibraryApi.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class AuthenticationController : ControllerBase
+    public class AuthenticationController : BaseController
     {
-        private readonly ILogger<AuthenticationController> _logger;
         private readonly IAuthenticationFacade _authenticationFacade;
         private readonly ITokenService _tokenService;
         private readonly AppSettings _appSettings;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationFacade authenticationFacade, ITokenService tokenBlacklistService, IOptions<AppSettings> appSettings)
+        public AuthenticationController(ILogger<BaseController> logger, IUserContext userContext,IAuthenticationFacade authenticationFacade, ITokenService tokenBlacklistService, IOptions<AppSettings> appSettings)
+            : base(logger, userContext)
         {
-            _logger = logger;
             _authenticationFacade = authenticationFacade;
             _tokenService = tokenBlacklistService;
             _appSettings = appSettings.Value;
@@ -65,7 +62,7 @@ namespace LibraryApi.Controllers
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {
-            var userId = HttpContext.Items["User"]?.ToString();
+            var userId = HttpContext.Items["UserId"]?.ToString();
 
             if (string.IsNullOrWhiteSpace(userId))
             {

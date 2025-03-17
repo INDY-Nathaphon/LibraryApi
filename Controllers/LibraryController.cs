@@ -1,5 +1,6 @@
 using LibraryApi.BusinessLogic.Implement.Library.Interface;
 using LibraryApi.BusinessLogic.Implement.User.Interface;
+using LibraryApi.Domain;
 using LibraryApi.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,14 +8,13 @@ namespace LibraryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class LibraryController : ControllerBase
+    public class LibraryController : BaseController
     {
-        private readonly ILogger<LibraryController> _logger;
         private readonly ILibraryFacade libraryFacade;
 
-        public LibraryController(ILogger<LibraryController> logger, ILibraryFacade libraryFacade)
+        public LibraryController(ILogger<BaseController> logger, ILibraryFacade libraryFacade, IUserContext userContext)
+            :base(logger,userContext)
         {
-            _logger = logger;
             this.libraryFacade = libraryFacade;
         }
 

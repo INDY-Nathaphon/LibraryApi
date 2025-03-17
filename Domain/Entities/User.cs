@@ -18,5 +18,6 @@ namespace LibraryApi.Domain.Entities
         // Navigation Properties
         public Library? Library { get; set; } // อาจเป็น null ถ้าเป็น SuperAdmin
         public ICollection<Loan> Loans { get; set; } = new List<Loan>();
+        public ICollection<Address> Addresses { get; set; } = new List<Address>();
     }
 }

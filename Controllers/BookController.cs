@@ -1,22 +1,24 @@
 using LibraryApi.BusinessLogic.Implement.Book.Interface;
 using LibraryApi.BusinessLogic.Implement.User.Facade;
+using LibraryApi.Domain;
 using LibraryApi.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class BookController : ControllerBase
+    public class BookController :  BaseController
     {
-        private readonly ILogger<BookController> _logger;
         private readonly IBookFacade bookFacade;
-        public BookController(ILogger<BookController> logger, IBookFacade bookFacade)
+        public BookController(ILogger<BaseController> logger, IBookFacade bookFacade, IUserContext userContext)
+            :base(logger,userContext)
         {
-            _logger = logger;
             this.bookFacade = bookFacade;
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBook(int id)
         {
@@ -28,6 +30,7 @@ namespace LibraryApi.Controllers
             return Ok(user);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateBook([FromBody] Book book)
         {
@@ -35,6 +38,7 @@ namespace LibraryApi.Controllers
             return CreatedAtAction(nameof(GetBook), new { id = createdUser.Id }, createdUser);
         }
 
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateBook([FromBody] Book book)
         {
@@ -42,6 +46,7 @@ namespace LibraryApi.Controllers
             return Ok(updatedBook);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {

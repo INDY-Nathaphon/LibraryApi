@@ -15,6 +15,7 @@ using LibraryApi.BusinessLogic.Service.TokenBlacklist;
 using LibraryApi.BusinessLogic.TransactionManager;
 using LibraryApi.Domain;
 using LibraryApi.Domain.Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -36,6 +37,30 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.ConfigureAppSettings(builder.Configuration);
+
+#region Authorization
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // ดึง JWT จาก Cookie แทน Header
+                var token = context.Request.Cookies["AuthToken"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+#endregion
 
 #region Database
 
@@ -73,6 +98,11 @@ builder.Services.AddScoped<ILibraryService, LibraryService>();
 
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
+builder.Services.AddScoped<AppDbContext>();
+
+builder.Services.AddScoped<IUserContext, UserContext>();
+
+
 #endregion
 
 var app = builder.Build();
@@ -85,6 +115,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.UseMiddleware<JwtMiddleware>();
 
 app.UseHttpsRedirection();
