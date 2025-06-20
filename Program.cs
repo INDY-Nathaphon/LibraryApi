@@ -10,15 +10,17 @@ using LibraryApi.BusinessLogic.Implement.Library.Service;
 using LibraryApi.BusinessLogic.Implement.User.Facade;
 using LibraryApi.BusinessLogic.Implement.User.Interface;
 using LibraryApi.BusinessLogic.Implement.User.Service;
-using LibraryApi.BusinessLogic.Middleware;
+using LibraryApi.BusinessLogic.Infrastructure.TransactionManager;
 using LibraryApi.BusinessLogic.Service.TokenBlacklist;
-using LibraryApi.BusinessLogic.TransactionManager;
 using LibraryApi.Domain;
+using LibraryApi.Domain.CurrentUserProvider;
 using LibraryApi.Domain.Entities;
+using LibraryApi.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,23 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.ConfigureAppSettings(builder.Configuration);
+
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = "https://your-auth-server.com"; // สำหรับกรณีใช้ Identity Server
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "your-issuer",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key"))
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 #region Authorization
 
@@ -82,7 +101,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 #region Add Service
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-builder.Services.AddScoped<ITransactionManager, TransactionManager>();  
+builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 
 builder.Services.AddScoped<IUserFacade, UserFacade>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -90,7 +109,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationFacade, AuthenticationFacade>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
-builder.Services.AddScoped<IBookFacade,BookFacade >();
+builder.Services.AddScoped<IBookFacade, BookFacade>();
 builder.Services.AddScoped<IBookService, BookService>();
 
 builder.Services.AddScoped<ILibraryFacade, LibraryFacade>();
@@ -100,8 +119,7 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 
 builder.Services.AddScoped<AppDbContext>();
 
-builder.Services.AddScoped<IUserContext, UserContext>();
-
+builder.Services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
 
 #endregion
 
@@ -114,9 +132,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
+
+#region Middleware
+
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<ExceptionHandlerMiddleware>();
-app.UseMiddleware<JwtMiddleware>();
+app.UseMiddleware<CurrentUserMiddleware>();
+
+#endregion
 
 app.UseHttpsRedirection();
 

@@ -1,6 +1,5 @@
 using LibraryApi.BusinessLogic.Implement.Library.Interface;
-using LibraryApi.BusinessLogic.Implement.User.Interface;
-using LibraryApi.Domain;
+using LibraryApi.Domain.CurrentUserProvider;
 using LibraryApi.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,8 +11,8 @@ namespace LibraryApi.Controllers
     {
         private readonly ILibraryFacade libraryFacade;
 
-        public LibraryController(ILogger<BaseController> logger, ILibraryFacade libraryFacade, IUserContext userContext)
-            :base(logger,userContext)
+        public LibraryController(ILogger<BaseController> logger, ILibraryFacade libraryFacade, ICurrentUserProvider userContext)
+            : base(logger, userContext)
         {
             this.libraryFacade = libraryFacade;
         }

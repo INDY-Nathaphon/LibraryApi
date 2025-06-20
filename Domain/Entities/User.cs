@@ -1,4 +1,4 @@
-﻿using static LibraryApi.BusinessLogic.Enum.Enums;
+﻿using static LibraryApi.Common.Enum.Enums;
 
 namespace LibraryApi.Domain.Entities
 {

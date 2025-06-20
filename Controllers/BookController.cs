@@ -1,6 +1,5 @@
 using LibraryApi.BusinessLogic.Implement.Book.Interface;
-using LibraryApi.BusinessLogic.Implement.User.Facade;
-using LibraryApi.Domain;
+using LibraryApi.Domain.CurrentUserProvider;
 using LibraryApi.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,11 +8,11 @@ namespace LibraryApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class BookController :  BaseController
+    public class BookController : BaseController
     {
         private readonly IBookFacade bookFacade;
-        public BookController(ILogger<BaseController> logger, IBookFacade bookFacade, IUserContext userContext)
-            :base(logger,userContext)
+        public BookController(ILogger<BaseController> logger, IBookFacade bookFacade, ICurrentUserProvider userContext)
+            : base(logger, userContext)
         {
             this.bookFacade = bookFacade;
         }

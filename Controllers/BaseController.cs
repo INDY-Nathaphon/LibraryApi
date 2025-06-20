@@ -1,4 +1,4 @@
-﻿using LibraryApi.Domain;
+﻿using LibraryApi.Domain.CurrentUserProvider;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 public abstract class BaseController : ControllerBase
 {
     protected readonly ILogger<BaseController> _logger;
-    protected readonly IUserContext _userContext;
+    protected readonly ICurrentUserProvider _userContext;
 
-    protected BaseController(ILogger<BaseController> logger, IUserContext userContext)
+    protected BaseController(ILogger<BaseController> logger, ICurrentUserProvider userContext)
     {
         _logger = logger;
         _userContext = userContext;
