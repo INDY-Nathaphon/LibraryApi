@@ -16,14 +16,12 @@ using LibraryApi.Domain;
 using LibraryApi.Domain.CurrentUserProvider;
 using LibraryApi.Domain.Entities;
 using LibraryApi.Middleware;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -40,40 +38,25 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.ConfigureAppSettings(builder.Configuration);
 
+#region Authorization
+
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var Secret = jwtSettings["Secret"] ?? string.Empty;
+var issuer = jwtSettings["Issuer"];
+
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = "https://your-auth-server.com"; // สำหรับกรณีใช้ Identity Server
+        //options.Authority = "https://your-auth-server.com"; // สำหรับกรณีใช้ Identity Server
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false,
             ValidateIssuer = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "your-issuer",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key"))
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-#region Authorization
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                // ดึง JWT จาก Cookie แทน Header
-                var token = context.Request.Cookies["AuthToken"];
-                if (!string.IsNullOrEmpty(token))
-                {
-                    context.Token = token;
-                }
-                return Task.CompletedTask;
-            }
+            ValidIssuer = issuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)),
+            RequireExpirationTime = true,
         };
     });
 
@@ -102,6 +85,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<ITransactionManagerService, TransactionManagerService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<DbContext, AppDbContext>();
 
 builder.Services.AddScoped<IUserFacade, UserFacade>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -116,8 +101,6 @@ builder.Services.AddScoped<ILibraryFacade, LibraryFacade>();
 builder.Services.AddScoped<ILibraryService, LibraryService>();
 
 builder.Services.AddSingleton<ITokenService, TokenService>();
-
-builder.Services.AddScoped<AppDbContext>();
 
 builder.Services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
 
