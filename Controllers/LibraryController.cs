@@ -1,6 +1,7 @@
 using LibraryApi.BusinessLogic.Implement.Library.Interface;
 using LibraryApi.Domain.CurrentUserProvider;
 using LibraryApi.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers
@@ -28,6 +29,7 @@ namespace LibraryApi.Controllers
             return Ok(library);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateLibrary([FromBody] Library library)
         {
@@ -35,6 +37,7 @@ namespace LibraryApi.Controllers
             return CreatedAtAction(nameof(createdLibrary), new { id = createdLibrary.Id }, createdLibrary);
         }
 
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateLibrary([FromBody] Library library)
         {
@@ -42,6 +45,7 @@ namespace LibraryApi.Controllers
             return Ok(updatedUser);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLibrary(int id)
         {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LibraryApi.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class BookController : BaseController
     {
@@ -17,7 +18,6 @@ namespace LibraryApi.Controllers
             this.bookFacade = bookFacade;
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBook(int id)
         {
@@ -29,7 +29,6 @@ namespace LibraryApi.Controllers
             return Ok(user);
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateBook([FromBody] Book book)
         {
@@ -37,7 +36,6 @@ namespace LibraryApi.Controllers
             return CreatedAtAction(nameof(GetBook), new { id = createdUser.Id }, createdUser);
         }
 
-        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateBook([FromBody] Book book)
         {
@@ -45,7 +43,6 @@ namespace LibraryApi.Controllers
             return Ok(updatedBook);
         }
 
-        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {

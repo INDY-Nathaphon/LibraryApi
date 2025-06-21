@@ -1,7 +1,6 @@
 ﻿using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
 using LibraryApi.BusinessLogic.Infrastructure.TransactionManager;
-using LibraryApi.Common.DTO.AuthenticationDTO;
-using LibraryApi.Common.DTO.BaseDTO;
+using LibraryApi.Common.Infos.Authentication;
 
 namespace LibraryApi.BusinessLogic.Implement.Authentication.Facade
 {
@@ -9,27 +8,27 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Facade
     {
         private readonly IAuthenticationService _authenticationService;
 
-        private readonly ITransactionManager _transactionManager;
+        private readonly ITransactionManagerService _transactionManager;
 
-        public AuthenticationFacade(ITransactionManager transactionManager, IAuthenticationService authenticationService)
+        public AuthenticationFacade(ITransactionManagerService transactionManager, IAuthenticationService authenticationService)
         {
             _authenticationService = authenticationService;
             _transactionManager = transactionManager;
         }
 
-        public Task<ResponseDto> Register(RegisterDto model)
+        public async Task Register(RegisterInfo model)
         {
-            return _transactionManager.DoworkWithTransaction(() => _authenticationService.Register(model));
+            await _transactionManager.DoworkWithTransaction(() => _authenticationService.Register(model));
         }
 
-        public Task<LoginRespDto> Login(LoginDto model)
+        public async Task<LoginRespInfo> Login(LoginInfo model)
         {
-            return _transactionManager.DoworkWithTransaction(() => _authenticationService.Login(model));
+            return await _transactionManager.DoworkWithTransaction(() => _authenticationService.Login(model));
         }
 
-        public Task<RefrachTokenRespDto> RefreshTokenAsync(string userId, string refreshToken)
+        public async Task<RefrachTokenRespInfo> RefreshTokenAsync(string userId, string refreshToken)
         {
-            return _transactionManager.DoworkWithTransaction(() => _authenticationService.RefreshTokenAsync(userId, refreshToken));
+            return await _transactionManager.DoworkWithTransaction(() => _authenticationService.RefreshTokenAsync(userId, refreshToken));
         }
     }
 }

@@ -6,38 +6,38 @@ namespace LibraryApi.BusinessLogic.Implement.User.Facade
     public class UserFacade : IUserFacade
     {
         private readonly IUserService _userService;
-        private readonly ITransactionManager _transactionManager;
+        private readonly ITransactionManagerService _transactionManager;
 
 
-        public UserFacade(ITransactionManager transactionManage, IUserService userService)
+        public UserFacade(ITransactionManagerService transactionManage, IUserService userService)
         {
             _transactionManager = transactionManage ?? throw new ArgumentNullException(nameof(transactionManage));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
-        public Task<Domain.Entities.User> AddAsync(Domain.Entities.User entity)
+        public async Task<Domain.Entities.User> AddAsync(Domain.Entities.User entity)
         {
-            return _transactionManager.DoworkWithTransaction(() => _userService.AddAsync(entity));
+            return await _transactionManager.DoworkWithTransaction(() => _userService.AddAsync(entity));
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            return _transactionManager.DoworkWithTransaction(() => _userService.DeleteAsync(id));
+            return await _transactionManager.DoworkWithTransaction(() => _userService.DeleteAsync(id));
         }
 
-        public Task<IEnumerable<Domain.Entities.User>> GetAllAsync()
+        public async Task<IEnumerable<Domain.Entities.User>> GetAllAsync()
         {
-            return _transactionManager.DoworkWithTransaction(() => _userService.GetAllAsync());
+            return await _transactionManager.DoworkWithTransaction(() => _userService.GetAllAsync());
         }
 
-        public Task<Domain.Entities.User?> GetByIdAsync(int id)
+        public async Task<Domain.Entities.User?> GetByIdAsync(int id)
         {
-            return _transactionManager.DoworkWithTransaction(() => _userService.GetByIdAsync(id));
+            return await _transactionManager.DoworkWithTransaction(() => _userService.GetByIdAsync(id));
         }
 
-        public Task<Domain.Entities.User> UpdateAsync(Domain.Entities.User entity)
+        public async Task<Domain.Entities.User> UpdateAsync(Domain.Entities.User entity)
         {
-            return _transactionManager.DoworkWithTransaction(() => _userService.UpdateAsync(entity));
+            return await _transactionManager.DoworkWithTransaction(() => _userService.UpdateAsync(entity));
         }
     }
 }

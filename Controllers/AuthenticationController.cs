@@ -1,6 +1,6 @@
 using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
 using LibraryApi.BusinessLogic.Service.TokenBlacklist;
-using LibraryApi.Common.DTO.AuthenticationDTO;
+using LibraryApi.Common.Infos.Authentication;
 using LibraryApi.Domain;
 using LibraryApi.Domain.CurrentUserProvider;
 using Microsoft.AspNetCore.Authorization;
@@ -25,20 +25,14 @@ namespace LibraryApi.Controllers
 
         [HttpGet]
         [Route("Register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        public async Task<IActionResult> Register([FromBody] RegisterInfo model)
         {
-            var result = await _authenticationFacade.Register(model);
-
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            await _authenticationFacade.Register(model);
+            return Ok();
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto model)
+        public async Task<IActionResult> Login([FromBody] LoginInfo model)
         {
             var result = await _authenticationFacade.Login(model);
 
@@ -75,8 +69,9 @@ namespace LibraryApi.Controllers
             return Ok(new { message = "Logged out successfully." });
         }
 
+        [Authorize]
         [HttpPost("RefreshToken")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto model)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenInfo model)
         {
             var refreshToken = model.RefreshToken;
             var userId = _tokenService.GetUserIdFromRefreshToken(refreshToken);

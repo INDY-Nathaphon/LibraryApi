@@ -101,7 +101,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 #region Add Service
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-builder.Services.AddScoped<ITransactionManager, TransactionManager>();
+builder.Services.AddScoped<ITransactionManagerService, TransactionManagerService>();
 
 builder.Services.AddScoped<IUserFacade, UserFacade>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -137,7 +137,7 @@ app.UseAuthentication();
 #region Middleware
 
 app.UseMiddleware<RequestLoggingMiddleware>();
-app.UseMiddleware<ExceptionHandlerMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<CurrentUserMiddleware>();
 
 #endregion

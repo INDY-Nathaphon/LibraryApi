@@ -1,9 +1,9 @@
-﻿using static LibraryApi.Common.Enum.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using static LibraryApi.Common.Enum.Enums;
 
-namespace LibraryApi.Common.DTO.AuthenticationDTO
+namespace LibraryApi.Common.Infos.Authentication
 {
-    public class RegisterDto
+    public class RegisterInfo
     {
         public string Name { get; set; } = string.Empty;
 

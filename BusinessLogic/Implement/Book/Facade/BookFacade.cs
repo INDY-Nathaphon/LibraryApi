@@ -7,37 +7,37 @@ namespace LibraryApi.BusinessLogic.Implement.Book.Facade
     {
         private readonly IBookService _bookService;
 
-        private readonly ITransactionManager _transactionManager;
-        public BookFacade(IBookService bookService, ITransactionManager transactionManager)
+        private readonly ITransactionManagerService _transactionManager;
+        public BookFacade(IBookService bookService, ITransactionManagerService transactionManager)
         {
             _bookService = bookService;
             _transactionManager = transactionManager;
         }
 
-        public Task<LibraryApi.Domain.Entities.Book> AddAsync(LibraryApi.Domain.Entities.Book entity)
+        public async Task<LibraryApi.Domain.Entities.Book> AddAsync(LibraryApi.Domain.Entities.Book entity)
         {
-            return _transactionManager.DoworkWithTransaction(() => _bookService.AddAsync(entity));
+            return await _transactionManager.DoworkWithTransaction(() => _bookService.AddAsync(entity));
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            return _transactionManager.DoworkWithTransaction(() => _bookService.DeleteAsync(id));
+            return await _transactionManager.DoworkWithTransaction(() => _bookService.DeleteAsync(id));
         }
 
 
-        public Task<IEnumerable<LibraryApi.Domain.Entities.Book>> GetAllAsync()
+        public async Task<IEnumerable<LibraryApi.Domain.Entities.Book>> GetAllAsync()
         {
-            return _transactionManager.DoworkWithTransaction(() => _bookService.GetAllAsync());
+            return await _transactionManager.DoworkWithTransaction(() => _bookService.GetAllAsync());
         }
 
-        public Task<LibraryApi.Domain.Entities.Book?> GetByIdAsync(int id)
+        public async Task<LibraryApi.Domain.Entities.Book?> GetByIdAsync(int id)
         {
-            return _transactionManager.DoworkWithTransaction(() => _bookService.GetByIdAsync(id));
+            return await _transactionManager.DoworkWithTransaction(() => _bookService.GetByIdAsync(id));
         }
 
-        public Task<LibraryApi.Domain.Entities.Book> UpdateAsync(LibraryApi.Domain.Entities.Book entity)
+        public async Task<LibraryApi.Domain.Entities.Book> UpdateAsync(LibraryApi.Domain.Entities.Book entity)
         {
-            return _transactionManager.DoworkWithTransaction(() => _bookService.UpdateAsync(entity));
+            return await _transactionManager.DoworkWithTransaction(() => _bookService.UpdateAsync(entity));
         }
     }
 }

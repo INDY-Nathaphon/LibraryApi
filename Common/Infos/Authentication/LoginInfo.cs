@@ -1,8 +1,8 @@
 ﻿using static LibraryApi.Common.Enum.Enums;
 
-namespace LibraryApi.Common.DTO.AuthenticationDTO
+namespace LibraryApi.Common.Infos.Authentication
 {
-    public class LoginDto
+    public class LoginInfo
     {
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty; // ใช้เฉพาะ Local Login

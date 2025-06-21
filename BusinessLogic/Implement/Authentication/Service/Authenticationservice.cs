@@ -1,22 +1,14 @@
-﻿using System.Data.Entity;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Azure.Core;
-using Azure;
-using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
-using LibraryApi.BusinessLogic.Implement.BaseService;
+﻿using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
+using LibraryApi.BusinessLogic.Implement.User.Interface;
+using LibraryApi.BusinessLogic.Service.TokenBlacklist;
+using LibraryApi.Common.Constant;
+using LibraryApi.Common.Exceptions;
+using LibraryApi.Common.Infos.Authentication;
 using LibraryApi.Domain;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using static LibraryApi.Common.Enum.Enums;
-using LibraryApi.BusinessLogic.Service.TokenBlacklist;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.EntityFrameworkCore.Storage;
-using LibraryApi.BusinessLogic.Implement.User.Interface;
-using StackExchange.Redis;
-using LibraryApi.Common.DTO.AuthenticationDTO;
-using LibraryApi.Common.DTO.BaseDTO;
+using System.Data.Entity;
+using static LibraryApi.Common.Enum.Enums;
 
 namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
 {
@@ -42,18 +34,18 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
             _userService = userService;
         }
 
-        public async Task<ResponseDto> Register(RegisterDto model)
+        public async Task Register(RegisterInfo model)
         {
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
 
             if (existingUser != null)
             {
-                return new ResponseDto(false, "Email already exists");
+                throw new AppException(AppErrorCode.InternalError);
             }
 
             if (model.AuthProvider != AuthProvider.Local && string.IsNullOrEmpty(model.OAuthId))
             {
-                return new ResponseDto(false, "OAuth ID is required for external authentication.");
+                //return new ApiResponse(false, "OAuth ID is required for external authentication.");
             }
 
             var user = new Domain.Entities.User
@@ -73,7 +65,7 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
             {
                 if (string.IsNullOrEmpty(model.Password))
                 {
-                    return new ResponseDto(false, "Password is required for local authentication.");
+                    //return new ApiResponse(false, "Password is required for local authentication.");
                 }
 
                 user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
@@ -81,11 +73,9 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
 
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
-
-            return new ResponseDto(true, "User registered successfully");
         }
 
-        public async Task<LoginRespDto> Login(LoginDto model)
+        public async Task<LoginRespInfo> Login(LoginInfo model)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
 
@@ -115,14 +105,14 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
 
             #endregion
 
-            return new LoginRespDto { AccessToken = accessToken, RefreshToken = refreshToken, Success   = true };
+            return new LoginRespInfo { AccessToken = accessToken, RefreshToken = refreshToken, Success = true };
         }
 
-        public async Task<RefrachTokenRespDto> RefreshTokenAsync(string refreshToken, string userId)
+        public async Task<RefrachTokenRespInfo> RefreshTokenAsync(string refreshToken, string userId)
         {
             #region Validate refresh token
 
-            _tokenService.ValidateRefreshToken(userId,refreshToken);
+            _tokenService.ValidateRefreshToken(userId, refreshToken);
 
             #endregion
 
@@ -142,7 +132,7 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Service
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
             });
 
-            return new RefrachTokenRespDto { RefreshToken = newRefreshToken, AccessToken = newAccessToken, Success = true };
+            return new RefrachTokenRespInfo { RefreshToken = newRefreshToken, AccessToken = newAccessToken, Success = true };
         }
     }
 }

@@ -1,11 +1,13 @@
 using LibraryApi.BusinessLogic.Implement.User.Interface;
 using LibraryApi.Domain.CurrentUserProvider;
 using LibraryApi.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class UserController : BaseController
     {
