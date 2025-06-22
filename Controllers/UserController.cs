@@ -1,8 +1,12 @@
 using LibraryApi.BusinessLogic.Implement.User.Interface;
+using LibraryApi.Common.Constant;
+using LibraryApi.Common.Exceptions;
+using LibraryApi.Common.Helpers.Attribute;
 using LibraryApi.Domain.CurrentUserProvider;
 using LibraryApi.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static LibraryApi.Common.Enum.Enums;
 
 namespace LibraryApi.Controllers
 {
@@ -20,6 +24,7 @@ namespace LibraryApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
         public async Task<IActionResult> GetUser(long id)
         {
             var result = await userFacade.GetByIdAsync(id);
@@ -27,6 +32,7 @@ namespace LibraryApi.Controllers
         }
 
         [HttpGet]
+        [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
         public async Task<IActionResult> GetAllUsers()
         {
             var result = await userFacade.GetAllAsync();
@@ -34,20 +40,28 @@ namespace LibraryApi.Controllers
         }
 
         [HttpPost]
+        [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             var result = await userFacade.AddAsync(user);
             return Ok(result);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateUser([FromBody] User user)
+        [HttpPut("{id}")]
+        [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
         {
+            if (id != user.Id)
+            {
+                throw new AppException(AppErrorCode.ValidationError, "Id mismatch.");
+            }
+
             var result = await userFacade.UpdateAsync(user);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
+        [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
         public async Task<IActionResult> DeleteUser(long id)
         {
             await userFacade.DeleteAsync(id);
@@ -55,6 +69,7 @@ namespace LibraryApi.Controllers
         }
 
         [HttpPost("{id}/lavelup-librarian")]
+        [AuthorizeLibrary(UserRoles.Admin)]
         public async Task<IActionResult> LavelupLibrarian(long id)
         {
             var adminId = _userContext.UserId;

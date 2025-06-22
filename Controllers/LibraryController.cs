@@ -1,8 +1,12 @@
 using LibraryApi.BusinessLogic.Implement.Library.Interface;
+using LibraryApi.Common.Constant;
+using LibraryApi.Common.Exceptions;
+using LibraryApi.Common.Helpers.Attribute;
 using LibraryApi.Domain.CurrentUserProvider;
 using LibraryApi.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static LibraryApi.Common.Enum.Enums;
 
 [Authorize]
 [ApiController]
@@ -32,6 +36,7 @@ public class LibraryController : BaseController
     }
 
     [HttpPost]
+    [AuthorizeLibrary(UserRoles.Admin)]
     public async Task<IActionResult> CreateLibrary([FromBody] Library library)
     {
         var result = await libraryFacade.AddAsync(library);
@@ -39,11 +44,12 @@ public class LibraryController : BaseController
     }
 
     [HttpPut("{id}")]
+    [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
     public async Task<IActionResult> UpdateLibrary(long id, [FromBody] Library library)
     {
         if (id != library.Id)
         {
-            return BadRequest("ID in URL and payload do not match.");
+            throw new AppException(AppErrorCode.ValidationError, "Id mismatch.");
         }
 
         var result = await libraryFacade.UpdateAsync(library);
@@ -51,6 +57,7 @@ public class LibraryController : BaseController
     }
 
     [HttpDelete("{id}")]
+    [AuthorizeLibrary(UserRoles.Admin)]
     public async Task<IActionResult> DeleteLibrary(long id)
     {
         await libraryFacade.DeleteAsync(id);

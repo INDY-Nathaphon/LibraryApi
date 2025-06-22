@@ -73,7 +73,7 @@ namespace LibraryApi.Controllers
 
             if (!authResult.Succeeded)
             {
-                return Unauthorized();
+                throw new AppException(AppErrorCode.Unauthorized, "Google authentication failed.");
             }
 
             var claims = authResult.Principal.Claims.ToList();
