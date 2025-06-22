@@ -5,14 +5,31 @@
         public enum UserRoles
         {
             Admin = 1,
-            User = 2
+            User = 2,
+            Guest = 3,
+            Librarian = 4,
+            Manager = 5
         }
 
         public enum AuthProvider
         {
-            Facebook = 1,
+            Local = 1,
             Google = 2,
-            Local = 3
         }
+
+        public enum LibraryPolicy
+        {
+            Read,
+            Write,
+            Admin
+        }
+
+        public enum LibraryPermission
+        {
+            Read,
+            Write,
+            Admin
+        }
+
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace LibraryApi.Domain.Entities
+﻿namespace LibraryApi.Common.Infos.Base
 {
-    public class BaseEntity
+    public class BaseInfo
     {
         public long Id { get; set; }
 

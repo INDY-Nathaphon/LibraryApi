@@ -9,9 +9,5 @@
         public string State { get; set; } = string.Empty;
         public string ZipCode { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
-
-        // Navigation Property
-        public User User { get; set; } = null!;
     }
-
 }

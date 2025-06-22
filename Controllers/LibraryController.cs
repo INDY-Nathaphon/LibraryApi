@@ -4,57 +4,72 @@ using LibraryApi.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LibraryApi.Controllers
+[Authorize]
+[ApiController]
+[Route("api/libraries")]
+public class LibraryController : BaseController
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class LibraryController : BaseController
+    private readonly ILibraryFacade libraryFacade;
+
+    public LibraryController(ILogger<BaseController> logger, ILibraryFacade libraryFacade, ICurrentUserProvider userContext)
+        : base(logger, userContext)
     {
-        private readonly ILibraryFacade libraryFacade;
+        this.libraryFacade = libraryFacade;
+    }
 
-        public LibraryController(ILogger<BaseController> logger, ILibraryFacade libraryFacade, ICurrentUserProvider userContext)
-            : base(logger, userContext)
+    [HttpGet]
+    public async Task<IActionResult> GetAllLibraries()
+    {
+        var result = await libraryFacade.GetAllAsync();
+        return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetLibrary(long id)
+    {
+        var result = await libraryFacade.GetByIdAsync(id);
+        return Ok(result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateLibrary([FromBody] Library library)
+    {
+        var result = await libraryFacade.AddAsync(library);
+        return CreatedAtAction(nameof(GetLibrary), new { id = result.Id }, result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateLibrary(long id, [FromBody] Library library)
+    {
+        if (id != library.Id)
         {
-            this.libraryFacade = libraryFacade;
+            return BadRequest("ID in URL and payload do not match.");
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetLibrary(int id)
-        {
-            var library = await libraryFacade.GetByIdAsync(id);
-            if (library == null)
-            {
-                return NotFound();
-            }
-            return Ok(library);
-        }
+        var result = await libraryFacade.UpdateAsync(library);
+        return Ok(result);
+    }
 
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> CreateLibrary([FromBody] Library library)
-        {
-            var createdLibrary = await libraryFacade.AddAsync(library);
-            return CreatedAtAction(nameof(createdLibrary), new { id = createdLibrary.Id }, createdLibrary);
-        }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteLibrary(long id)
+    {
+        await libraryFacade.DeleteAsync(id);
+        return NoContent();
+    }
 
-        [Authorize]
-        [HttpPut]
-        public async Task<IActionResult> UpdateLibrary([FromBody] Library library)
-        {
-            var updatedUser = await libraryFacade.UpdateAsync(library);
-            return Ok(updatedUser);
-        }
+    [HttpPost("{id}/join")]
+    public async Task<IActionResult> JoinLibrary(long id)
+    {
+        var userId = _userContext.UserId;
+        await libraryFacade.JoinLibrary(id, userId);
+        return Ok();
+    }
 
-        [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLibrary(int id)
-        {
-            var success = await libraryFacade.DeleteAsync(id);
-            if (!success)
-            {
-                return NotFound();
-            }
-            return NoContent();
-        }
+    [HttpPost("join")]
+    public async Task<IActionResult> JoinLibraries([FromBody] List<long> ids)
+    {
+        var userId = _userContext.UserId;
+        await libraryFacade.JoinLibraries(ids, userId);
+        return Ok();
     }
 }

@@ -19,7 +19,7 @@ namespace LibraryApi.BusinessLogic.Implement.Book.Facade
             return await _transactionManager.DoworkWithTransaction(() => _bookService.AddAsync(entity));
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(long id)
         {
             return await _transactionManager.DoworkWithTransaction(() => _bookService.DeleteAsync(id));
         }
@@ -30,7 +30,7 @@ namespace LibraryApi.BusinessLogic.Implement.Book.Facade
             return await _transactionManager.DoworkWithTransaction(() => _bookService.GetAllAsync());
         }
 
-        public async Task<LibraryApi.Domain.Entities.Book?> GetByIdAsync(int id)
+        public async Task<LibraryApi.Domain.Entities.Book?> GetByIdAsync(long id)
         {
             return await _transactionManager.DoworkWithTransaction(() => _bookService.GetByIdAsync(id));
         }

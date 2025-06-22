@@ -8,7 +8,7 @@ namespace LibraryApi.Controllers
 {
     [ApiController]
     [Authorize]
-    [Route("[controller]")]
+    [Route("api/users")]
     public class UserController : BaseController
     {
         private readonly IUserFacade userFacade;
@@ -20,39 +20,46 @@ namespace LibraryApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser(int id)
+        public async Task<IActionResult> GetUser(long id)
         {
-            var user = await userFacade.GetByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(user);
+            var result = await userFacade.GetByIdAsync(id);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var result = await userFacade.GetAllAsync();
+            return Ok(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
-            var createdUser = await userFacade.AddAsync(user);
-            return CreatedAtAction(nameof(GetUser), new { id = createdUser.Id }, createdUser);
+            var result = await userFacade.AddAsync(user);
+            return Ok(result);
         }
 
         [HttpPut]
         public async Task<IActionResult> UpdateUser([FromBody] User user)
         {
-            var updatedUser = await userFacade.UpdateAsync(user);
-            return Ok(updatedUser);
+            var result = await userFacade.UpdateAsync(user);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(long id)
         {
-            var success = await userFacade.DeleteAsync(id);
-            if (!success)
-            {
-                return NotFound();
-            }
+            await userFacade.DeleteAsync(id);
             return NoContent();
+        }
+
+        [HttpPost("{id}/lavelup-librarian")]
+        public async Task<IActionResult> LavelupLibrarian(long id)
+        {
+            var adminId = _userContext.UserId;
+            await userFacade.LavelupLibrarian(adminId, id);
+            return Ok();
         }
     }
 }

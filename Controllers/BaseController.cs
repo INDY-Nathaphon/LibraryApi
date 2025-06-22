@@ -14,7 +14,7 @@ public abstract class BaseController : ControllerBase
         _userContext = userContext;
     }
 
-    protected string? UserId => _userContext.UserId; // ใช้งานได้ใน Controller อื่น
+    protected long UserId => _userContext.UserId; // ใช้งานได้ใน Controller อื่น
 
     /// <summary>
     /// จัดการ Response Format ให้อยู่ในมาตรฐานเดียวกัน

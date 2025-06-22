@@ -18,11 +18,11 @@ namespace LibraryApi.Middleware
 
             if (user.Identity?.IsAuthenticated ?? false)
             {
-                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userId = long.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
                 var email = user.FindFirst(ClaimTypes.Email)?.Value;
                 var role = user.FindFirst(ClaimTypes.Role)?.Value;
 
-                if (!string.IsNullOrEmpty(userId))
+                if (userId > 0)
                 {
                     currentUser.SetUser(userId, email, role);
                 }
@@ -31,5 +31,4 @@ namespace LibraryApi.Middleware
             await _next(context);
         }
     }
-
 }

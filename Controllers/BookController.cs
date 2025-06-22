@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApi.Controllers
 {
-    [ApiController]
     [Authorize]
-    [Route("[controller]")]
+    [ApiController]
+    [Route("api/books")]
     public class BookController : BaseController
     {
         private readonly IBookFacade bookFacade;
@@ -19,38 +19,30 @@ namespace LibraryApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBook(int id)
+        public async Task<IActionResult> GetBook(long id)
         {
-            var user = await bookFacade.GetByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(user);
+            var result = await bookFacade.GetByIdAsync(id);
+            return Ok(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateBook([FromBody] Book book)
         {
-            var createdUser = await bookFacade.AddAsync(book);
-            return CreatedAtAction(nameof(GetBook), new { id = createdUser.Id }, createdUser);
+            var result = await bookFacade.AddAsync(book);
+            return Ok(result);
         }
 
         [HttpPut]
         public async Task<IActionResult> UpdateBook([FromBody] Book book)
         {
-            var updatedBook = await bookFacade.UpdateAsync(book);
-            return Ok(updatedBook);
+            var result = await bookFacade.UpdateAsync(book);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(int id)
+        public async Task<IActionResult> DeleteBook(long id)
         {
-            var success = await bookFacade.DeleteAsync(id);
-            if (!success)
-            {
-                return NotFound();
-            }
+            await bookFacade.DeleteAsync(id);
             return NoContent();
         }
     }

@@ -3,8 +3,8 @@
     public class AppSettings
     {
         public ConnectionStringSettings ConnectionSetting { get; set; } = new();
-        public JwtSettings JwtSetting { get; set; } = new();
-        public RedisSettings RedisSetting { get; set; } = new();
+        public JwtSettings JwtSettings { get; set; } = new();
+        public RedisSettings Redis { get; set; } = new();
     }
 
     public class ConnectionStringSettings
@@ -18,12 +18,13 @@
         public string Issuer { get; set; } = string.Empty;
         public string Audience { get; set; } = string.Empty;
         public int ExpiresInMinutes { get; set; }
+        public string RefreshTokenSecret { get; set; } = string.Empty;
         public int RefreshTokenExpiryMinutes { get; set; }
     }
 
     public class RedisSettings
     {
-        public string ConnectionString { get; set; } = string.Empty;
+        public string RedisConnectionString { get; set; } = string.Empty;
         public int TokenExpiryMinutes { get; set; }
     }
 

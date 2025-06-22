@@ -1,4 +1,5 @@
 ﻿using LibraryApi.Common.Infos.Authentication;
+using System.Security.Claims;
 
 namespace LibraryApi.BusinessLogic.Implement.Authentication.Interface
 {
@@ -6,8 +7,12 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Interface
     {
         Task Register(RegisterInfo model);
 
-        Task<LoginRespInfo> Login(LoginInfo model);
+        Task<AuthResult> Login(LoginInfo model);
 
-        Task<RefrachTokenRespInfo> RefreshTokenAsync(string userId, string refreshToken);
+        Task<AuthResult> RefreshTokenAsync(string userId);
+
+        Task<bool> RevokeRefreshToken(string refreshTokenJwt);
+
+        Task<AuthResult> GoogleResponse(List<Claim> claims);
     }
 }

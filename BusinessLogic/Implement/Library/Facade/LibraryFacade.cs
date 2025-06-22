@@ -1,5 +1,6 @@
 ﻿using LibraryApi.BusinessLogic.Implement.Library.Interface;
 using LibraryApi.BusinessLogic.Infrastructure.TransactionManager;
+using LibraryApi.Common.Infos.User;
 
 namespace LibraryApi.BusinessLogic.Implement.Library.Facade
 {
@@ -18,7 +19,7 @@ namespace LibraryApi.BusinessLogic.Implement.Library.Facade
             return await _transactionManager.DoworkWithTransaction(() => _libraryService.AddAsync(entity));
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(long id)
         {
             return await _transactionManager.DoworkWithTransaction(() => _libraryService.DeleteAsync(id));
         }
@@ -28,7 +29,7 @@ namespace LibraryApi.BusinessLogic.Implement.Library.Facade
             return await _transactionManager.DoworkWithTransaction(() => _libraryService.GetAllAsync());
         }
 
-        public async Task<Domain.Entities.Library?> GetByIdAsync(int id)
+        public async Task<Domain.Entities.Library?> GetByIdAsync(long id)
         {
             return await _transactionManager.DoworkWithTransaction(() => _libraryService.GetByIdAsync(id));
         }
@@ -37,5 +38,21 @@ namespace LibraryApi.BusinessLogic.Implement.Library.Facade
         {
             return await _transactionManager.DoworkWithTransaction(() => _libraryService.UpdateAsync(entity));
         }
+
+        public async Task JoinLibrary(long libraryId, long userId)
+        {
+            await _transactionManager.DoworkWithTransaction(() => _libraryService.JoinLibrary(libraryId, userId));
+        }
+
+        public async Task JoinLibraries(List<long> libraryIds, long userId)
+        {
+            await _transactionManager.DoworkWithTransaction(() => _libraryService.JoinLibraries(libraryIds, userId));
+        }
+
+        public async Task<List<UserInfo>> GetUsersByLibraryIdAsync(long libraryId)
+        {
+            return await _transactionManager.DoworkWithTransaction(() => _libraryService.GetUsersByLibraryIdAsync(libraryId));
+        }
+
     }
 }

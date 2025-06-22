@@ -1,6 +1,7 @@
 ﻿using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
 using LibraryApi.BusinessLogic.Infrastructure.TransactionManager;
 using LibraryApi.Common.Infos.Authentication;
+using System.Security.Claims;
 
 namespace LibraryApi.BusinessLogic.Implement.Authentication.Facade
 {
@@ -21,14 +22,24 @@ namespace LibraryApi.BusinessLogic.Implement.Authentication.Facade
             await _transactionManager.DoworkWithTransaction(() => _authenticationService.Register(model));
         }
 
-        public async Task<LoginRespInfo> Login(LoginInfo model)
+        public async Task<AuthResult> Login(LoginInfo model)
         {
             return await _transactionManager.DoworkWithTransaction(() => _authenticationService.Login(model));
         }
 
-        public async Task<RefrachTokenRespInfo> RefreshTokenAsync(string userId, string refreshToken)
+        public async Task<AuthResult> RefreshTokenAsync(string refreshToken)
         {
-            return await _transactionManager.DoworkWithTransaction(() => _authenticationService.RefreshTokenAsync(userId, refreshToken));
+            return await _transactionManager.DoworkWithTransaction(() => _authenticationService.RefreshTokenAsync(refreshToken));
+        }
+
+        public async Task<bool> RevokeRefreshToken(string refreshTokenJwt)
+        {
+            return await _transactionManager.DoworkWithTransaction(() => _authenticationService.RevokeRefreshToken(refreshTokenJwt));
+        }
+
+        public async Task<AuthResult> GoogleResponse(List<Claim> claims)
+        {
+            return await _transactionManager.DoworkWithTransaction(() => _authenticationService.GoogleResponse(claims));
         }
     }
 }

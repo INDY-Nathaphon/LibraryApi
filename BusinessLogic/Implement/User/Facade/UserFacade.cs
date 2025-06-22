@@ -20,7 +20,7 @@ namespace LibraryApi.BusinessLogic.Implement.User.Facade
             return await _transactionManager.DoworkWithTransaction(() => _userService.AddAsync(entity));
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(long id)
         {
             return await _transactionManager.DoworkWithTransaction(() => _userService.DeleteAsync(id));
         }
@@ -30,7 +30,7 @@ namespace LibraryApi.BusinessLogic.Implement.User.Facade
             return await _transactionManager.DoworkWithTransaction(() => _userService.GetAllAsync());
         }
 
-        public async Task<Domain.Entities.User?> GetByIdAsync(int id)
+        public async Task<Domain.Entities.User?> GetByIdAsync(long id)
         {
             return await _transactionManager.DoworkWithTransaction(() => _userService.GetByIdAsync(id));
         }
@@ -38,6 +38,11 @@ namespace LibraryApi.BusinessLogic.Implement.User.Facade
         public async Task<Domain.Entities.User> UpdateAsync(Domain.Entities.User entity)
         {
             return await _transactionManager.DoworkWithTransaction(() => _userService.UpdateAsync(entity));
+        }
+
+        public async Task LavelupLibrarian(long adminId, long userId)
+        {
+            await _transactionManager.DoworkWithTransaction(() => _userService.LavelupLibrarian(adminId, userId));
         }
     }
 }
