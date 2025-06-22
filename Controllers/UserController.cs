@@ -15,19 +15,19 @@ namespace LibraryApi.Controllers
     [Route("api/users")]
     public class UserController : BaseController
     {
-        private readonly IUserFacade userFacade;
+        private readonly IUserFacade _userFacade;
 
         public UserController(ILogger<BaseController> logger, IUserFacade userFacade, ICurrentUserProvider userContext)
             : base(logger, userContext)
         {
-            this.userFacade = userFacade;
+            this._userFacade = userFacade;
         }
 
         [HttpGet("{id}")]
         [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
         public async Task<IActionResult> GetUser(long id)
         {
-            var result = await userFacade.GetByIdAsync(id);
+            var result = await _userFacade.GetByIdAsync(id);
             return Ok(result);
         }
 
@@ -35,7 +35,7 @@ namespace LibraryApi.Controllers
         [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
         public async Task<IActionResult> GetAllUsers()
         {
-            var result = await userFacade.GetAllAsync();
+            var result = await _userFacade.GetAllAsync();
             return Ok(result);
         }
 
@@ -43,7 +43,7 @@ namespace LibraryApi.Controllers
         [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
-            var result = await userFacade.AddAsync(user);
+            var result = await _userFacade.AddAsync(user);
             return Ok(result);
         }
 
@@ -56,7 +56,7 @@ namespace LibraryApi.Controllers
                 throw new AppException(AppErrorCode.ValidationError, "Id mismatch.");
             }
 
-            var result = await userFacade.UpdateAsync(user);
+            var result = await _userFacade.UpdateAsync(user);
             return Ok(result);
         }
 
@@ -64,7 +64,7 @@ namespace LibraryApi.Controllers
         [AuthorizeLibrary(UserRoles.Admin, UserRoles.Librarian)]
         public async Task<IActionResult> DeleteUser(long id)
         {
-            await userFacade.DeleteAsync(id);
+            await _userFacade.DeleteAsync(id);
             return NoContent();
         }
 
@@ -73,8 +73,16 @@ namespace LibraryApi.Controllers
         public async Task<IActionResult> LavelupLibrarian(long id)
         {
             var adminId = _userContext.UserId;
-            await userFacade.LavelupLibrarian(adminId, id);
+            await _userFacade.LavelupLibrarian(adminId, id);
             return Ok();
+        }
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var userId = _userContext.UserId;
+            var profile = await _userFacade.GetByIdAsync(userId);
+            return Ok(profile);
         }
     }
 }

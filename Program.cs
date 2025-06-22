@@ -1,4 +1,5 @@
-﻿using LibraryApi.BusinessLogic.Implement.Authentication.Facade;
+﻿using AspNetCoreRateLimit;
+using LibraryApi.BusinessLogic.Implement.Authentication.Facade;
 using LibraryApi.BusinessLogic.Implement.Authentication.Interface;
 using LibraryApi.BusinessLogic.Implement.Authentication.Service;
 using LibraryApi.BusinessLogic.Implement.Book.Facade;
@@ -156,6 +157,17 @@ builder.Services.AddScoped<IRedisService, RedisService>();
 
 #endregion
 
+#region ratelimit
+
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+#endregion
+
+#region CORS
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -165,6 +177,8 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials()); // สำหรับ cookie หรือ OAuth redirect
 });
+
+#endregion
 
 var app = builder.Build();
 
@@ -188,6 +202,8 @@ app.UseMiddleware<CurrentUserMiddleware>();
 #endregion
 
 app.UseHttpsRedirection();
+
+app.UseIpRateLimiting();
 
 app.UseAuthentication();   // ตรวจสอบตัวตนก่อน
 app.UseAuthorization();    // ตรวจสอบสิทธิ์หลังจากรู้ว่าเป็นใคร
